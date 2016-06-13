@@ -21,7 +21,13 @@ class IndicatorUtils: NSObject {
         blocker.addSubview(activityIndicator)
         blocker.addConstraint(NSLayoutConstraint(item: activityIndicator, attribute: .CenterX, relatedBy: .Equal, toItem: blocker, attribute: .CenterX, multiplier: 1, constant: 0))
         blocker.addConstraint(NSLayoutConstraint(item: activityIndicator, attribute: .CenterY, relatedBy: .Equal, toItem: blocker, attribute: .CenterY, multiplier: 1, constant: 0))
-        controller.navigationController?.view.addSubview(blocker)
+        if let tabBarController = controller.navigationController?.tabBarController {
+            tabBarController.view.addSubview(blocker)
+        } else if let navigationController = controller.navigationController {
+            navigationController.view.addSubview(blocker)
+        } else {
+            controller.view.addSubview(blocker)
+        }
         activityIndicator.startAnimating()
         return blocker
     }

@@ -169,12 +169,12 @@
                   moduleName = "listance"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/benroaman/Documents/dev/iOS/listance/listance/SyncanoUtils.swift"
-                  timestampString = "483830802.507304"
+                  timestampString = "487549959.980022"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "163"
                   endingLineNumber = "163"
-                  offsetFromSymbolStart = "764">
+                  offsetFromSymbolStart = "907">
                </Location>
                <Location
                   shouldBeEnabled = "Yes"
@@ -184,12 +184,12 @@
                   moduleName = "listance"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/benroaman/Documents/dev/iOS/listance/listance/SyncanoUtils.swift"
-                  timestampString = "483830802.507394"
+                  timestampString = "487549959.980208"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "164"
                   endingLineNumber = "164"
-                  offsetFromSymbolStart = "36">
+                  offsetFromSymbolStart = "35">
                </Location>
             </Locations>
          </BreakpointContent>
