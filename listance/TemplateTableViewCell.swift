@@ -12,8 +12,8 @@ class TemplateTableViewCell: UITableViewCell {
     
     // MARK: Instance Variables
     
-    private var template: List?
-    var onInstantiate: ((List?)->Void)?
+    private var template: ListSync?
+    var onInstantiate: ((ListSync?)->Void)?
     
     // MARK: Outlets
     
@@ -38,7 +38,7 @@ class TemplateTableViewCell: UITableViewCell {
     
     // MARK: Public Functions
     
-    func configure(template:List) {
+    func configure(template:ListSync) {
         self.template = template
         self.nameLabel.text = self.template?.name
         self.infoLabel.text = self.template?.info

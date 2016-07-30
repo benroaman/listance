@@ -2,16 +2,16 @@
 //  Item.swift
 //  listance
 //
-//  Created by Ben Roaman on 4/27/16.
+//  Created by Ben Roaman on 7/9/16.
 //  Copyright © 2016 Ben Roaman. All rights reserved.
 //
 
-import syncano_ios
+import Foundation
+import CoreData
 
-class Item: SCDataObject {
-    var name = ""
-    var info = ""
-    var checked = false
-    var parentList: List?
-    var image: SCFile?
+
+class Item: NSManagedObject {
+
+// Insert code here to add functionality to your managed object subclass
+
 }

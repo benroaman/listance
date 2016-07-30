@@ -17,6 +17,8 @@
 #import "SCUploadRequest.h"
 #import "AFNetworkReachabilityManager.h"
 #import "SCUser+UserDefaults.h"
+#import "SCConstants.h"
+#import "NSString+PathManipulations.h"
 
 @interface SCAPIClient () <SCRequestQueueDelegate>
 @end
@@ -60,9 +62,17 @@
         self.requestSerializer = [AFJSONRequestSerializer serializer];
         self.securityPolicy = [self syncanoSecurityPolicy];
         self.responseSerializer = [SCJSONResponseSerializer serializer];
+        [self setSessionDidReceiveAuthenticationChallengeBlock:^NSURLSessionAuthChallengeDisposition(NSURLSession * _Nonnull session, NSURLAuthenticationChallenge * _Nonnull challenge, NSURLCredential *__autoreleasing  _Nullable * _Nullable credential) {
+            return NSURLSessionAuthChallengePerformDefaultHandling;
+        }];
         [self initializeReachabilityManager];
     }
     return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    SCAPIClient *apiClient = [[[self class] allocWithZone:zone] initWithApiVersion:self.apiVersion apiKey:self.apiKey instanceName:self.instanceName];
+    return apiClient;
 }
 
 - (AFSecurityPolicy*)syncanoSecurityPolicy {
@@ -71,7 +81,7 @@
     policy.validatesDomainName = NO;
     NSString *cerPath = [[NSBundle bundleForClass:[self class]] pathForResource:kSCCertificateFileName ofType:nil];
     NSData *certData = [NSData dataWithContentsOfFile:cerPath];
-    policy.pinnedCertificates = @[certData];
+    policy.pinnedCertificates = [NSSet setWithObject:certData];
     return policy;
 }
 
@@ -228,12 +238,12 @@
     [self authorizeRequest];
     NSURLSessionDataTask *task = [self GET:path
                                 parameters:params
+                                  progress:nil
                                    success:^(NSURLSessionDataTask *task, id responseObject) {
                                        completion(task,responseObject, nil);
                                    } failure:^(NSURLSessionDataTask *task, NSError *error) {
                                        completion(task,nil, error);
                                    }];
-    
     return task;
 }
 
@@ -241,6 +251,7 @@
     [self authorizeRequest];
     NSURLSessionDataTask *task = [self POST:path
                                 parameters:params
+                                   progress:nil
                                    success:^(NSURLSessionDataTask *task, id responseObject) {
                                        completion(task,responseObject, nil);
                                    } failure:^(NSURLSessionDataTask *task, NSError *error) {
@@ -297,7 +308,7 @@
     NSURLSessionDataTask *task = [self POST:path parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
         [formData appendPartWithFileData:fileData name:propertyName fileName:propertyName mimeType:[fileData mimeTypeByGuessing]];
         [formData appendPartWithFormData:fileData name:propertyName];
-    } success:^(NSURLSessionDataTask *task, id responseObject) {
+    } progress:nil success:^(NSURLSessionDataTask *task, id responseObject) {
         completion(task,responseObject, nil);
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
         completion(task,nil, error);
@@ -316,6 +327,26 @@
 
 - (BOOL)reachable {
     return self.networkReachabilityManager.reachable;
+}
+
+@end
+
+@implementation SCAPIClient (CacheKey)
+
+- (void)checkAndResolveCacheKeyExistanceInPayload:(NSDictionary *)payload forPath:(NSString *)path completion:(void(^)(NSString *path, NSDictionary *payload))completion {
+    if (completion == nil) {
+        return;
+    }
+    if ([payload objectForKey:SCPleaseParameterCacheKey] != nil) {
+        NSString *cacheKey = payload[SCPleaseParameterCacheKey];
+        NSMutableDictionary *mutablePayload = [payload mutableCopy];
+        [mutablePayload removeObjectForKey:SCPleaseParameterCacheKey];
+        NSString *cacheKeyQueryString = [NSString stringWithFormat:@"%@=%@",SCPleaseParameterCacheKey,cacheKey];
+        NSString *pathWithCacheKey = [path pathStringByAppendingQueryString:cacheKeyQueryString];
+        completion(pathWithCacheKey,[mutablePayload copy]);
+    } else {
+            completion(path,payload);
+    }
 }
 
 @end

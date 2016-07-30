@@ -10,19 +10,26 @@ import UIKit
 
 extension UIViewController {
     
-    func dataGetFailure(error: NSError) {
-        AlertUtils.generateSingleOptionAlert(self, title: "Uh Oh!", message: "We couldn't get your data! " + error.localizedDescription, actionTitle: "Okay", handler: nil)
+    func dataGetFailure(error: NSError?) {
+        dataError(error, message: "We couldn't get your data!")
     }
     
-    func dataCreateFailure(error: NSError) {
-        AlertUtils.generateSingleOptionAlert(self, title: "Uh Oh!", message: "We couldn't create your data! " + error.localizedDescription, actionTitle: "Okay", handler: nil)
+    func dataCreateFailure(error: NSError?) {
+        dataError(error, message: "We couldn't create your data!")
     }
     
-    func dataUpdateFailure(error: NSError) {
-        AlertUtils.generateSingleOptionAlert(self, title: "Uh Oh!", message: "We couldn't update your data! " + error.localizedDescription, actionTitle: "Okay", handler: nil)
+    func dataUpdateFailure(error: NSError?) {
+        dataError(error, message: "We couldn't update your data!")
     }
     
-    func dataDeleteFailure(error: NSError) {
-        AlertUtils.generateSingleOptionAlert(self, title: "Uh Oh!", message: "We couldn't delete your data! " + error.localizedDescription, actionTitle: "Okay", handler: nil)
+    func dataDeleteFailure(error: NSError?) {
+        dataError(error, message: "We couldn't delete your data!")
+    }
+    
+    func dataError(error:NSError?, message:String) {
+        if let e = error {
+            AlertUtils.generateSingleOptionAlert(self, title: "Uh Oh!", message: message + " " + e.localizedDescription, actionTitle: "Okay", handler: nil)
+        }
+        NSLog("ERROR :: DATA :: \(message) :: \(error)")
     }
 }

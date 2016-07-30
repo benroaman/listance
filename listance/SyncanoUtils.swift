@@ -12,19 +12,19 @@ class SyncanoUtils: NSObject {
     
     // MARK: Get Lists
     
-    class func getAllTemplates(success:([List])->Void, failure:(NSError)->Void) {
+    class func getAllTemplates(success:([ListSync])->Void, failure:(NSError?)->Void) {
         getAllLists(true, success: success, failure: failure)
     }
     
-    class func getAllListances(success:([List])->Void, failure:(NSError)->Void) {
+    class func getAllListances(success:([ListSync])->Void, failure:(NSError?)->Void) {
         getAllLists(false, success: success, failure: failure)
     }
     
-    class func getAllLists(getTemplates:Bool, success:([List])->Void, failure:(NSError)->Void) {
+    class func getAllLists(getTemplates:Bool, success:([ListSync])->Void, failure:(NSError?)->Void) {
         let templatePredicate = SCPredicate.whereKey("isTemplate", isEqualToBool: getTemplates)
-        List.please().giveMeDataObjectsWithPredicate(templatePredicate, parameters: nil) { results, error in
-            if error == nil {
-                let templates = results.map({ $0 as! List })
+        ListSync.please().giveMeDataObjectsWithPredicate(templatePredicate, parameters: nil) { results, error in
+            if let resultsUnwrapped = results where error == nil {
+                let templates = resultsUnwrapped.map({ $0 as! ListSync })
                 success(templates)
             } else {
                 failure(error)
@@ -32,11 +32,11 @@ class SyncanoUtils: NSObject {
         }
     }
     
-    class func getAllSublistsForList(parentListId:NSNumber, success:([List])->Void, failure:(NSError)->Void) {
+    class func getAllSublistsForList(parentListId:NSNumber, success:([ListSync])->Void, failure:(NSError?)->Void) {
         let templatePredicate = SCPredicate.whereKey("parentList", isEqualToNumber: parentListId)
-        List.please().giveMeDataObjectsWithPredicate(templatePredicate, parameters: nil) { results, error in
-            if error == nil {
-                let templates = results.map({ $0 as! List })
+        ListSync.please().giveMeDataObjectsWithPredicate(templatePredicate, parameters: nil) { results, error in
+            if let resultsUnwrapped = results where error == nil {
+                let templates = resultsUnwrapped.map({ $0 as! ListSync })
                 success(templates)
             } else {
                 failure(error)
@@ -46,8 +46,8 @@ class SyncanoUtils: NSObject {
     
     // MARK: Create Lists
     
-    class func createTemplateList(name:String, success:(List)->Void, failure:(NSError)->Void) {
-        let newTemplate = List()
+    class func createTemplateList(name:String, success:(ListSync)->Void, failure:(NSError?)->Void) {
+        let newTemplate = ListSync()
         newTemplate.name = name
         newTemplate.info = "New Template"
         newTemplate.isTemplate = true
@@ -60,8 +60,8 @@ class SyncanoUtils: NSObject {
         }
     }
     
-    class func createSublistWithName(name:String, parentList:List, success:(List)->Void, failure:(NSError)->Void) {
-        let newSublist = List()
+    class func createSublistWithName(name:String, parentList:ListSync, success:(ListSync)->Void, failure:(NSError?)->Void) {
+        let newSublist = ListSync()
         newSublist.name = name
         newSublist.parentList = parentList
         newSublist.saveWithCompletionBlock() { error in
@@ -73,33 +73,35 @@ class SyncanoUtils: NSObject {
         }
     }
     
-    class func instantiateListFromTemplate(list:List, success:(List)->Void, failure:(NSError)->Void) {
-        let instance = List()
+    class func instantiateListFromTemplate(list:ListSync, success:(ListSync)->Void, failure:(NSError?)->Void) {
+        let instance = ListSync()
         instance.name = list.name
         instance.info = list.info
         instance.isTemplate = false
-        instance.saveWithCompletionBlock() { error in
-            getAllItemsForList(list.objectId, success: { items in
-                let copies: [Item] = items.map({
-                    let copy = Item()
-                    copy.name = $0.name
-                    copy.info = $0.info
-                    copy.image = $0.image
-                    copy.parentList = instance
-                    return copy
-                })
-                saveItemsRecursively(copies, iterator: 0, completion: {
-                    success(instance)
+        if let listId = list.objectId {
+            instance.saveWithCompletionBlock() { error in
+                getAllItemsForList(listId, success: { items in
+                    let copies: [ItemSync] = items.map({
+                        let copy = ItemSync()
+                        copy.name = $0.name
+                        copy.info = $0.info
+                        copy.image = $0.image
+                        copy.parentList = instance
+                        return copy
+                    })
+                    saveItemsRecursively(copies, iterator: 0, completion: {
+                        success(instance)
+                        }, failure: { error in
+                            failure(error)
+                    })
                     }, failure: { error in
                         failure(error)
                 })
-                }, failure: { error in
-                    failure(error)
-            })
+            }
         }
     }
     
-    class func saveItemsRecursively(items:[Item], iterator: Int, completion:()->Void, failure:(NSError)->Void) {
+    class func saveItemsRecursively(items:[ItemSync], iterator: Int, completion:()->Void, failure:(NSError?)->Void) {
         // TODO: Research batch save and/or putting this logic in cloud box
         if iterator < items.count {
             items[iterator].saveWithCompletionBlock() { error in
@@ -116,7 +118,7 @@ class SyncanoUtils: NSObject {
     
     // MARK: Update Lists
     
-    class func updateList(list:List, success:()->Void, failure:(NSError)->Void) {
+    class func updateList(list:ListSync, success:()->Void, failure:(NSError?)->Void) {
         list.saveWithCompletionBlock() { error in
             if error == nil {
                 success()
@@ -128,7 +130,7 @@ class SyncanoUtils: NSObject {
     
     // MARK: Delete Lists
     
-    class func deleteList(list:List, success:(List)->Void, failure:(NSError)->Void) {
+    class func deleteList(list:ListSync, success:(ListSync)->Void, failure:(NSError?)->Void) {
         list.deleteWithCompletion() { error in
             if error == nil {
                 success(list)
@@ -140,11 +142,11 @@ class SyncanoUtils: NSObject {
     
     // MARK: Get Items
     
-    class func getAllItemsForList(parentListId:NSNumber, success:([Item])->Void, failure:(NSError)->Void) {
+    class func getAllItemsForList(parentListId:NSNumber, success:([ItemSync])->Void, failure:(NSError?)->Void) {
         let itemPredicate = SCPredicate.whereKey("parentList", isEqualToNumber: parentListId)
-        Item.please().giveMeDataObjectsWithPredicate(itemPredicate, parameters: nil) { results, error in
-            if error == nil {
-                let items = results.map({ $0 as! Item })
+        ItemSync.please().giveMeDataObjectsWithPredicate(itemPredicate, parameters: nil) { results, error in
+            if let resultsUnwrapped = results where error == nil {
+                let items = resultsUnwrapped.map({ $0 as! ItemSync })
                 success(items)
             } else {
                 failure(error)
@@ -154,8 +156,8 @@ class SyncanoUtils: NSObject {
     
     // MARK: Create Items
     
-    class func createItemWithName(name:String, parentList:List, success:(Item)->Void, failure:(NSError)->Void) {
-        let newItem = Item()
+    class func createItemWithName(name:String, parentList:ListSync, success:(ItemSync)->Void, failure:(NSError?)->Void) {
+        let newItem = ItemSync()
         newItem.name = name
         newItem.info = "New Item"
         newItem.checked = false
@@ -171,7 +173,7 @@ class SyncanoUtils: NSObject {
     
     // MARK: Update Items
     
-    class func updateItem(item:Item, success:()->Void, failure:(NSError)->Void) {
+    class func updateItem(item:ItemSync, success:()->Void, failure:(NSError?)->Void) {
         item.saveWithCompletionBlock() { error in
             if error == nil {
                 success()
@@ -183,7 +185,7 @@ class SyncanoUtils: NSObject {
     
     // MARK: Delete Items
     
-    class func deleteItem(item:Item, success:()->Void, failure:(NSError)->Void) {
+    class func deleteItem(item:ItemSync, success:()->Void, failure:(NSError?)->Void) {
         item.deleteWithCompletion() { error in
             if error == nil {
                 success()

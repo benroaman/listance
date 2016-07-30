@@ -12,10 +12,10 @@ class ItemTableViewCell: UITableViewCell {
     
     // MARK: Instance Variables
     
-    var item:Item?
+    var item:ItemSync?
     var isInstance = false;
     
-    var onToggleItemChecked:((Item?, (Bool)->Void)->Void)?
+    var onToggleItemChecked:((ItemSync?, (Bool)->Void)->Void)?
     
     // MARK: Outlets
     
@@ -45,10 +45,10 @@ class ItemTableViewCell: UITableViewCell {
     
     // MARK: Public Functions
     
-    func configure(item: Item) {
+    func configure(item: ItemSync) {
         self.item = item
-        if let itemThumbnail = item.image {
-            self.thumbnail.image = UIImage(data: itemThumbnail.data)
+        if let itemThumbnail = item.image, thumbnailData = itemThumbnail.data {
+            self.thumbnail.image = UIImage(data: thumbnailData)
         }
         self.nameLabel.text = item.name
         self.infoLabel.text = item.info

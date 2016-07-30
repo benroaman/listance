@@ -2,15 +2,27 @@
 //  List.swift
 //  listance
 //
-//  Created by Ben Roaman on 4/27/16.
+//  Created by Ben Roaman on 7/9/16.
 //  Copyright © 2016 Ben Roaman. All rights reserved.
 //
 
-import syncano_ios
+import Foundation
+import CoreData
 
-class List: SCDataObject {
-    var name = ""
-    var info = ""
-    var isTemplate = false
-    var parentList: List?
+
+class List: NSManagedObject {
+    
+    func newSublist() -> List {
+        let list = NSEntityDescription.insertNewObjectForEntityForName("List", inManagedObjectContext: CoreDataUtil.managedObjectContext) as! List
+        list.isTemplate = self.isTemplate
+        list.parentList = self
+        return list
+    }
+    
+    func newItem() -> Item {
+        let item = NSEntityDescription.insertNewObjectForEntityForName("Item", inManagedObjectContext: CoreDataUtil.managedObjectContext) as! Item
+        item.checked = false
+        item.parentList = self
+        return item
+    }
 }

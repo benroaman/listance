@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TemplatesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class TemplatesViewController: TableViewController, UITableViewDataSource, UITableViewDelegate {
     
     // MARK: Segue Identifiers
     
@@ -16,12 +16,13 @@ class TemplatesViewController: UIViewController, UITableViewDataSource, UITableV
     
     // MARK: Instance Variables
     
-    private var templates: [List] = []
-    private var templateToEdit: List?
-    
-    // MARK: Outlets
-    
-    @IBOutlet var templatesTableView: UITableView!
+    private var templates: [ListSync] = [] {
+        didSet {
+            handleZeroItemView(templates.count)
+        }
+    }
+    private var templateToEdit: ListSync?
+    private var showingZeroItem = false
     
     // MARK: Actions
     
@@ -29,10 +30,12 @@ class TemplatesViewController: UIViewController, UITableViewDataSource, UITableV
         AlertUtils.generateTextInputAlert(self, title: "Create List Template", placeholder: "template name", confirmTitle: "Create") { text in
             SyncanoUtils.createTemplateList(text, success: { template in
                 self.templates.append(template)
-                self.templatesTableView.reloadData()
+                self.tableView.reloadData()
                 // TODO: Perform segue to newly created template edit view
                 }, failure: { error in
-                    AlertUtils.generateSingleOptionAlert(self, title: "Uh Oh!", message: "Sorry, creation failed :(" + error.localizedDescription, actionTitle: "Okay", handler: nil)
+                    if let e = error {
+                        AlertUtils.generateSingleOptionAlert(self, title: "Uh Oh!", message: "Sorry, creation failed :(" + e.localizedDescription, actionTitle: "Okay", handler: nil)
+                    }
             })
         }
     }
@@ -41,14 +44,16 @@ class TemplatesViewController: UIViewController, UITableViewDataSource, UITableV
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        templatesTableView.dataSource = self
-        templatesTableView.delegate = self
+        zeroItemExplanationText = NSLocalizedString("templatesZeroItemViewExplanation", comment: "")
+        zeroItemInstructionText = NSLocalizedString("templatesZeroItemViewInstruction", comment: "")
+        tableView.dataSource = self
+        tableView.delegate = self
         //        templatesTableView.allowsSelection = false
-        templatesTableView.allowsMultipleSelectionDuringEditing = false
+        tableView.allowsMultipleSelectionDuringEditing = false
         let indicator = IndicatorUtils.addScreenCoveringActivityIndicator(self, color: UIColor.withHexValue(AppColors.aqua))
         SyncanoUtils.getAllTemplates({ results in
             self.templates = results
-            self.templatesTableView.reloadData()
+            self.tableView.reloadData()
             indicator.removeFromSuperview()
             }, failure: { error in
                 indicator.removeFromSuperview()
@@ -117,7 +122,7 @@ class TemplatesViewController: UIViewController, UITableViewDataSource, UITableV
             AlertUtils.generateConfirmationAlert(self, message: "Delete the template '" + template.name + "'?", callback: {
                 SyncanoUtils.deleteList(template, success: { list in
                     self.templates = self.templates.filter({ $0 != list })
-                    self.templatesTableView.reloadData()
+                    self.tableView.reloadData()
                     }, failure: { error in
                         self.dataDeleteFailure(error)
                 })
@@ -130,7 +135,7 @@ class TemplatesViewController: UIViewController, UITableViewDataSource, UITableV
     
     // MARK: Private Function
     
-    func transitionToEditViewForTemplate(template:List) {
+    private func transitionToEditViewForTemplate(template:ListSync) {
         self.templateToEdit = template
         self.performSegueWithIdentifier(self.editTemplateSegueIdentifier, sender: nil)
     }

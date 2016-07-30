@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ListancesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ListancesViewController: TableViewController, UITableViewDataSource, UITableViewDelegate {
     
     // MARK: Reuse Identifiers
     
@@ -20,12 +20,12 @@ class ListancesViewController: UIViewController, UITableViewDataSource, UITableV
     
     // MARK: Instance Variables
 
-    var listances: [List] = []
-    private var listanceToEdiit: List?
-    
-    // MARK: Outlets
-    
-    @IBOutlet var listancesTableView: UITableView!
+    var listances: [ListSync] = [] {
+        didSet {
+            handleZeroItemView(listances.count)
+        }
+    }
+    private var listanceToEdiit: ListSync?
     
     // MARK: Actions
     
@@ -37,18 +37,20 @@ class ListancesViewController: UIViewController, UITableViewDataSource, UITableV
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        listancesTableView.dataSource = self
-        listancesTableView.delegate = self
+        zeroItemExplanationText = NSLocalizedString("listancesZeroItemViewExplanation", comment: "")
+        zeroItemInstructionText = NSLocalizedString("listancesZeroItemViewInstruction", comment: "")
+        tableView.dataSource = self
+        tableView.delegate = self
         //        templatesTableView.allowsSelection = false
-        listancesTableView.allowsMultipleSelectionDuringEditing = false
+        tableView.allowsMultipleSelectionDuringEditing = false
         let indicator = IndicatorUtils.addScreenCoveringActivityIndicator(self, color: UIColor.withHexValue(AppColors.aqua))
         SyncanoUtils.getAllListances({ results in
             self.listances = results
-            self.listancesTableView.reloadData()
+            self.tableView.reloadData()
             indicator.removeFromSuperview()
             }, failure: { error in
                 indicator.removeFromSuperview()
-                self.dataGetFailure(error)
+                self.dataGetFailure(error!)
         })
     }
     
@@ -92,7 +94,7 @@ class ListancesViewController: UIViewController, UITableViewDataSource, UITableV
     
     // MARK: Private Functions
     
-    func transitionToViewViewForListance(listance:List) {
+    func transitionToViewViewForListance(listance:ListSync) {
         self.listanceToEdiit = listance
         self.performSegueWithIdentifier(self.viewListanceSegueIdentifier, sender: nil)
     }

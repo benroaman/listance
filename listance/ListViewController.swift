@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ListViewController: TableViewController, UITableViewDataSource, UITableViewDelegate {
     
     // MARK: Segue Indentifiers
     
@@ -20,17 +20,20 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     // MARK: Instance Variables
     
-    var list: List?
-    var items:[Item] = []
-    var sublists:[List] = []
+    var list: ListSync?
+    var items:[ItemSync] = [] {
+        didSet {
+            handleZeroItemView(items.count + sublists.count)
+        }
+    }
+    var sublists:[ListSync] = [] {
+        didSet {
+            handleZeroItemView(items.count + sublists.count)
+        }
+    }
     var isInstance = false
-    var itemToDetail: Item?
-    
-    // MARK: Outlets
-    
-    @IBOutlet var itemsTableView: UITableView!
-    @IBOutlet var listInfoLabel: UILabel!
-    
+    var itemToDetail: ItemSync?
+
     // MARK: Actions
     
     @IBAction func addAction(sender: AnyObject) {
@@ -41,7 +44,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     let indicator = IndicatorUtils.addScreenCoveringActivityIndicator(self, color: UIColor.withHexValue(AppColors.aqua))
                     SyncanoUtils.createItemWithName(text, parentList: list, success: { item in
                         self.items.append(item)
-                        self.itemsTableView.reloadData()
+                        self.tableView.reloadData()
                         indicator.removeFromSuperview()
                         }, failure: { error in
                             indicator.removeFromSuperview()
@@ -55,7 +58,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     //                    let indicator = IndicatorUtils.addScreenCoveringActivityIndicator(self, color: UIColor.withHexValue(AppColors.aqua))
                     //                    SyncanoUtils.createSublistWithName(text, parentList: list, success: { sublist in
                     //                        self.sublists.append(sublist)
-                    //                        self.itemsTableView.reloadData()
+                    //                        self.tableView.reloadData()
                     //                        indicator.removeFromSuperview()
                     //                        }, failure: { error in
                     //                            indicator.removeFromSuperview()
@@ -72,17 +75,18 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        itemsTableView.dataSource = self
-        itemsTableView.delegate = self
+        zeroItemExplanationText = NSLocalizedString("listZeroItemViewExplanation", comment: "")
+        zeroItemInstructionText = NSLocalizedString("listZeroItemViewInstruction", comment: "")
+        tableView.dataSource = self
+        tableView.delegate = self
         self.navigationItem.title = list?.name
-        self.listInfoLabel.text = list?.info
         let indicator = IndicatorUtils.addScreenCoveringActivityIndicator(self, color: UIColor.withHexValue(AppColors.aqua))
         if let listId = self.list?.objectId {
             SyncanoUtils.getAllItemsForList(listId, success: { items in
                 self.items = items
                 SyncanoUtils.getAllSublistsForList(listId, success: { sublists in
                     self.sublists = sublists
-                    self.itemsTableView.reloadData()
+                    self.tableView.reloadData()
                     indicator.removeFromSuperview()
                     }, failure: { error in
                         indicator.removeFromSuperview()
@@ -154,7 +158,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 AlertUtils.generateConfirmationAlert(self, message: "Delete the item '" + item.name + "'?", callback: {
                     SyncanoUtils.deleteItem(item, success: { list in
                         self.items = self.items.filter({ $0 != item })
-                        self.itemsTableView.reloadData()
+                        self.tableView.reloadData()
                         }, failure: { error in
                             self.dataDeleteFailure(error)
                     })
@@ -171,12 +175,12 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     // MARK: Private Functions
     
-    private func transitionToEditViewForItem(item:Item) {
+    private func transitionToEditViewForItem(item:ItemSync) {
         itemToDetail = item
         self.performSegueWithIdentifier(showItemDetailViewSegueIdentifier, sender: nil)
     }
     
-    private func dataLoadFailure(indicator: UIView, error: NSError) {
+    private func dataLoadFailure(indicator: UIView, error: NSError?) {
         indicator.removeFromSuperview()
         self.dataGetFailure(error)
     }

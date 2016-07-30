@@ -12,7 +12,7 @@ class ListanceTableViewCell: UITableViewCell {
     
     // MARK: Instance Variable
     
-    var listance:List?
+    var listance:ListSync?
     
     // MARK: Outlets
     
@@ -29,7 +29,7 @@ class ListanceTableViewCell: UITableViewCell {
     
     // MARK: Public Functions
     
-    func configure(listance:List) {
+    func configure(listance:ListSync) {
         self.listance = listance
         nameLabel.text = listance.name
         infoLabel.text = listance.info

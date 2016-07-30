@@ -20,14 +20,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // MARK: register Syncano models
         
-        Item.registerClass()
-        List.registerClass()
+        ItemSync.registerClass()
+        ListSync.registerClass()
         Syncano.sharedInstanceWithApiKey("e779ef924d16faea4ce4acd9501c1c2a8b39ca47", instanceName: "listance")
         // MARK: Load initial view
         
         window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController() as UIViewController!
         window?.backgroundColor = UIColor.whiteColor()
         window?.makeKeyAndVisible()
+        
+        UITabBarItem.appearance().setTitleTextAttributes([NSFontAttributeName:UIFont(name:"Avenir Next Medium", size: 10)!], forState: .Normal)
         return true
     }
 

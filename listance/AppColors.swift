@@ -8,5 +8,6 @@
 
 struct AppColors {
     static let aqua = 0x619F9B
+    static let paleAqua = 0xdcf7f6
     static let tomato = 0xFF6347
 }

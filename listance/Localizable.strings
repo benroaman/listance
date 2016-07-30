@@ -1,0 +1,16 @@
+/* 
+  Localizable.strings
+  listance
+
+  Created by Ben Roaman on 7/29/16.
+  Copyright © 2016 Ben Roaman. All rights reserved.
+*/
+
+// Zero Item View Text
+
+"templatesZeroItemViewExplanation" = "Oh snap! You have no templates.";
+"templatesZeroItemViewInstruction" = "Tap + to create a template, homie!";
+"listancesZeroItemViewExplanation" = "Oh snap! You have no listances.";
+"listancesZeroItemViewInstruction" = "Tap + to create a listance, or instantiate a template from the templates tab, homie!";
+"listZeroItemViewExplanation" = "Oh snap! This list is empty.";
+"listZeroItemViewInstruction" = "Tap + to create an item or sublist, homie!";
